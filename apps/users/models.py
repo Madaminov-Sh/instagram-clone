@@ -116,13 +116,9 @@ class UserComfirmation(BaseModel):
 
     def save(self, *args, **kwargs):
         if self.verify_type == VIA_EMAIL:
-            print(f"this is verify type: {self.verify_type}")
             self.expiration_time = datetime.now() + timedelta(minutes=EMAIL_EXPIRE)
-            print(f"this is expiration time for email: {self.expiration_time}")
         else:
-            print(f"this is verify type: {self.verify_type}")
             self.expiration_time = datetime.now() + timedelta(minutes=PHONE_EXPIRE)
-            print(f"this is expiration time for phone: {self.expiration_time}")
         super(UserComfirmation, self).save(*args, **kwargs)
 
     def __str__(self) :

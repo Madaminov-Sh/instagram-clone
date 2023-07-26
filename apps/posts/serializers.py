@@ -17,7 +17,7 @@ class PostSerializer(serializers.ModelSerializer):
         author = UserSerializer(read_only=True)
 
         post_likes_count = serializers.SerializerMethodField("get_likes_count")
-        post_comments_count = serializers.SerializerMethodField("getcomment_count")
+        post_comments_count = serializers.SerializerMethodField("get_comment_count")
         me_liked = serializers.SerializerMethodField("get_me_liked")
 
         class Meta:
@@ -29,19 +29,22 @@ class PostSerializer(serializers.ModelSerializer):
                 'caption', 
                 'created_time', 
                 'post_likes_count', 
-                'post_comment_count',
-                'me_liked'
+                'post_comments_count',
+                'me_liked',
             ]
 
+            extra_kwargs = {
+                "image": {"required": False}
+            }
+
         def get_likes_count(self, obj):
-             print("this is obk: ", obj)
              return obj.postlikes.count()
         
         def get_comment_count(self, obj):
              return obj.comments.count()
         
         def get_me_liked(self, obj):
-            request = self.context('request', None)
+            request = self.context.get('request', None)
              
             if request and request.user.is_authenticated:
                 try:
@@ -63,15 +66,16 @@ class CommentSerializer(serializers.ModelSerializer):
           model = PostComment
           fields = [
               'id', 
-              'author', 
+              'author',
               'post', 
+              "comment",
               'created_time', 
               'parent', 
               'replies', 
-              'me_liked', 
-              'likes_count'
+              'likes_count', 
+              'me_liked'
             ]
-          
+                  
      def get_replies(self, obj):
         if obj.child.exists():
             serializer = self.__class__(obj.child.all(), many=True, context=self.context)
@@ -82,7 +86,7 @@ class CommentSerializer(serializers.ModelSerializer):
      def get_me_liked(self, obj):
         user = self.context.get("request").user
         if user.is_authenticated:
-            return obj.comments(author=user).exists()
+            return obj.commentlikes.filter(author=user).exists()
         else:
             return False
 
@@ -105,4 +109,4 @@ class CommentLikeSerializer(serializers.ModelSerializer):
 
      class Meta:
          model = CommentLike
-         fields = ['id', 'author']
+         fields = ['id', 'author', 'comment',]

@@ -44,10 +44,9 @@ class VerifyApi(APIView):
     @staticmethod
     def check_verify(user, code):
         verifies = user.verify_codes.filter(expiration_time__gte=datetime.datetime.now(), code=code, is_confirmed=False)
-        print(f'this is verifies: {verifies}')
+       
         user.refresh_from_db() 
         if not verifies.exists():
-            print('not verifies, sharti bajarildi')
             data = {
                 'message': "Tasdiqlash kodi xato"
             }
@@ -55,7 +54,6 @@ class VerifyApi(APIView):
         
             # Tasdiqlangan kodlarni yangilash
         update_code = verifies.update(is_confirmed=True)
-        print(f"Updated verification codes: {update_code}")
         
         if user.auth_status == NEW:
             user.auth_status = CODE_VERIFIED
